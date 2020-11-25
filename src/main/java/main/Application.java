@@ -1,64 +1,27 @@
 package main;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
-import javax.imageio.ImageIO;
-
-import com.twelvemonkeys.image.ResampleOp;
+import behavior.DirectoryObserver;
+import config.ConfigurationProvider;
+import processors.ImageProcessor;
 
 public class Application {
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 
-		File rootDirectory = new File("images/original");
+		System.out.println("STARTING");
 
-		BufferedImage bufferedImage;
-		BufferedImageOp resampler;
-		BufferedImage output;
+		DirectoryObserver observer = new DirectoryObserver(new ConfigurationProvider());
 
-		boolean isDirectory = rootDirectory.exists() && rootDirectory.isDirectory();
+		observer.addFileProcessor(".jpg", new ImageProcessor());
 
-		File[] lastFiles = {};
-		
-		if (isDirectory) {
-			try {
-				while (true) {
-					File[] files = rootDirectory.listFiles();
-					if (Arrays.compare(files, lastFiles) != 0) {
-						System.out.println("FOUND FILES: ");
-						for (File file : files) {
-							if ((file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg"))
-									&& file.isFile()) {
-								System.out.println(file);
-								bufferedImage = ImageIO.read(file);
-								resampler = new ResampleOp(300, 300, ResampleOp.FILTER_LANCZOS);
-								output = resampler.filter(bufferedImage, null);
-								ImageIO.write(output, "jpeg", new File("images/processed/" + file.getName()));
-							}
-						}
-					}
-					lastFiles = files;
-					Thread.sleep(500);
-				}
-			} catch (NullPointerException e) {
-				System.err.println("This directory no longer exists.");
-			}
-		} else {
-			System.err.println("No such directory");
-		}
+		observer.observe();
 
-//		BufferedImage bufferedImage = ImageIO.read(new File("images/original/2-7.jpg"));
-//		
-//		BufferedImageOp resampler = new ResampleOp(300, 300, ResampleOp.FILTER_LANCZOS);
-//
-//	    BufferedImage output = resampler.filter(bufferedImage, null);
-//		
-//		ImageIO.write(output, "jpeg", new File("images/processed/2-7.jpg"));
+//		ImageProcessor imageProcessor = new ImageProcessor(new ConfigurationProvider());
+//		imageProcessor.transform("Colors.jpg");
+
+		System.out.println("FINISHED");
 
 	}
-
 }
